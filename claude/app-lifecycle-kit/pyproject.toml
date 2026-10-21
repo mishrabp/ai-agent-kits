@@ -1,7 +1,7 @@
 # Python project metadata for the plugin's code. There is nothing to install: the server and hooks use only
 # the standard library, because Claude Code installs plugins without running any install step.
 # Claude Code starts them with plain `python3` (see .mcp.json and hooks/hooks.json). Keep `version` the same
-# as in .claude-plugin/plugin.json.
+# as the plugin manifest's.
 #
 #   uv run -m unittest discover -s tests
 #   uv run scripts/smoke_test.py

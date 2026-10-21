@@ -57,6 +57,42 @@ and `beautifulsoup4` into the plugin's own data folder (not into your Python). T
 a minute or two with `pip`; the first tool call waits for it. The server still answers Claude Code instantly, so
 startup never times out. Outside a plugin, the folder is `~/.cache/stock-analyst-kit/`.
 
+## What it does on your machine
+
+A summary for anyone reviewing the plugin before installing it. All of the code is readable Python in `server/`.
+
+**Runs.** One process, the MCP server: `python3 ${CLAUDE_PLUGIN_ROOT}/server/stock_mcp.py`. There are no hooks and no
+other commands. The skill and the agent are Markdown instructions for Claude.
+
+**Installs, once.** If `yfinance`, `ddgs` and `beautifulsoup4` can't already be imported, `server/deps.py` installs
+them, in a background thread, with one of these commands (whichever tool is available):
+
+```bash
+uv pip install --quiet --python <this python> --target <data folder>/pylib-py<version> "yfinance>=0.2.54" "ddgs>=9" "beautifulsoup4>=4.12"
+<this python> -m pip install --quiet --disable-pip-version-check --target <data folder>/pylib-py<version> "yfinance>=0.2.54" "ddgs>=9" "beautifulsoup4>=4.12"
+```
+
+The data folder is the plugin's own (`${CLAUDE_PLUGIN_DATA}`), or `~/.cache/stock-analyst-kit/` outside a plugin. The
+packages never go into your Python installation, and nothing is installed at any other time. To remove them, delete
+that folder; uninstalling the plugin deletes it too.
+
+**Contacts these hosts**, only when a tool is called:
+
+| Purpose | Hosts |
+|---|---|
+| First-run package install | `pypi.org`, `files.pythonhosted.org` |
+| Prices, fundamentals, earnings, analysts, ETF holdings (yfinance) | `query1.finance.yahoo.com`, `query2.finance.yahoo.com`, `finance.yahoo.com`, `fc.yahoo.com`, and Yahoo's consent pages (`guce.yahoo.com`, `consent.yahoo.com`) when Yahoo asks for them |
+| News search (ddgs) | `duckduckgo.com`, `www.bing.com`, `news.search.yahoo.com` |
+| News (RSS) | `news.google.com` |
+| Retail sentiment | `api.stocktwits.com` |
+| `read_article` | only the article URL that Claude passes to it |
+
+**Writes** only to the data folder above (the installed packages) and, when you run a report, one file:
+`stock-report-YYYY-MM-DD.md` in the current folder, which Claude Code asks you to approve.
+
+**Doesn't** need or read any API keys, credentials, environment secrets or files outside the plugin, and its five
+tools only read data: they never place trades or post anything.
+
 ## Install and use it
 
 ### Claude Code in VS Code
@@ -109,8 +145,8 @@ Cloud sessions don't install plugins from marketplaces. In your cloud **environm
 1. **Setup script**: `git clone --depth 1 https://github.com/mishrabp/ai-agent-kits /opt/ai-agent-kits`
 2. **Environment variable**: `CLAUDE_CODE_PLUGIN_DIRS=/opt/ai-agent-kits/claude/stock-analyst-kit`
 3. **Network access**: the default **Trusted** level allows PyPI (for the package install) but not the market data
-   sites. Allow `finance.yahoo.com`, `query1.finance.yahoo.com`, `query2.finance.yahoo.com`, `fc.yahoo.com`,
-   `duckduckgo.com`, `news.google.com` and `api.stocktwits.com`, or use full network access.
+   sites. Allow the hosts listed under [What it does on your machine](#what-it-does-on-your-machine), or use full
+   network access.
 
 > This recipe follows the Claude Code docs, and `CLAUDE_CODE_PLUGIN_DIRS` was tested locally, but it hasn't been run
 > in a cloud session yet.

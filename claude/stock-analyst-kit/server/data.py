@@ -186,7 +186,8 @@ def _ddgs_news(query, days):
 
     limit = "d" if days <= 1 else "w" if days <= 7 else "m"
     with DDGS() as d:
-        rows = d.news(query, max_results=15, timelimit=limit) or []
+        # Named explicitly so the hosts contacted are known: duckduckgo.com, bing.com, news.search.yahoo.com.
+        rows = d.news(query, max_results=15, timelimit=limit, backend="duckduckgo, bing, yahoo") or []
     return [{"title": x.get("title"), "source": x.get("source"), "url": x.get("url"),
              "date": (x.get("date") or "")[:10] or None, "snippet": (x.get("body") or "")[:240], "via": "duckduckgo"}
             for x in rows]

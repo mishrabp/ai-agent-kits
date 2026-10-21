@@ -1,13 +1,13 @@
 # Python project metadata for the plugin's code. Claude Code installs plugins without running any install step,
 # so the server installs these dependencies itself on first start, into the plugin's data folder (server/deps.py).
 # Claude Code starts it with plain `python3` (see .mcp.json). Keep `version` the same
-# as in .claude-plugin/plugin.json.
+# as the plugin manifest's.
 #
 #   uv run -m unittest discover -s tests
 #   uv run scripts/smoke_test.py [SYMBOL]
 [project]
 name = "stock-analyst-kit"
-version = "1.0.0"
+version = "1.0.1"
 description = "Claude Code plugin: stock analysis of the top QQQ and SPY holdings with backtest-anchored confidence"
 license = { text = "MIT" }
 requires-python = ">=3.9"
