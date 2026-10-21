@@ -1,0 +1,16 @@
+# Python project metadata for the plugin's code. There is nothing to install: the connector uses only the
+# standard library, because Claude Code installs plugins without running any install step.
+# Claude Code starts it with plain `python3` (see .mcp.json). `version` here is informational:
+# Claude Code versions the plugin by git commit.
+#
+#   uv run scripts/smoke_test.py [owner/repo] [pr-number]
+[project]
+name = "gh-pr-kit"
+version = "1.0.0"
+description = "Claude Code plugin for GitHub pull requests: MCP connector, pr-reviewer subagent, pr-review and release-notes skills"
+license = { text = "MIT" }
+requires-python = ">=3.9"
+dependencies = []
+
+[tool.uv]
+package = false   # scripts run in place; nothing is built or installed

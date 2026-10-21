@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "fortune": {
+      "command": "python3",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/server/fortune_server.py"]
+    }
+  }
+}

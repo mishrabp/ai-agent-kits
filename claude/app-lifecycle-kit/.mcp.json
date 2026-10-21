@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "lifecycle": {
+      "command": "python3",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/src/lifecycle.py", "mcp"],
+      "env": {
+        "LIFECYCLE_PROJECT_DIR": "${CLAUDE_PROJECT_DIR}"
+      }
+    }
+  }
+}

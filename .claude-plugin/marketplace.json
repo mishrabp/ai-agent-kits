@@ -1,0 +1,22 @@
+{
+  "name": "ai-agent-kits",
+  "owner": { "name": "Bibhu Mishra", "url": "https://github.com/mishrabp" },
+  "description": "Claude Code plugins by Bibhu Mishra: a hello-world kit, GitHub PR review, and an app lifecycle kit",
+  "plugins": [
+    {
+      "name": "hello-kit",
+      "source": "./claude/hello-kit",
+      "description": "Hello-world: one skill, one agent, one connector"
+    },
+    {
+      "name": "gh-pr-kit",
+      "source": "./claude/gh-pr-kit",
+      "description": "Review GitHub pull requests and draft release notes"
+    },
+    {
+      "name": "app-lifecycle",
+      "source": "./claude/app-lifecycle-kit",
+      "description": "Requirements → design → build → test → deploy with persistent, traceable state"
+    }
+  ]
+}

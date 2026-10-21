@@ -1,0 +1,27 @@
+{
+  "name": "gh-pr-kit",
+  "displayName": "GitHub PR Kit",
+  "description": "Review GitHub pull requests and draft release notes: a GitHub MCP connector, a pr-reviewer subagent, and pr-review / release-notes skills",
+  "author": {
+    "name": "Bibhu Mishra",
+    "url": "https://github.com/mishrabp"
+  },
+  "license": "MIT",
+  "keywords": [
+    "github",
+    "pull-request",
+    "code-review",
+    "release-notes",
+    "mcp"
+  ],
+  "userConfig": {
+    "github_token": {
+      "type": "string",
+      "title": "GitHub token",
+      "description": "Personal access token with repo read access (and pull request write access to post reviews). Leave empty to use your `gh auth login` session.",
+      "sensitive": true
+    }
+  },
+  "homepage": "https://github.com/mishrabp/ai-agent-kits/tree/main/claude/gh-pr-kit",
+  "repository": "https://github.com/mishrabp/ai-agent-kits"
+}

@@ -1,0 +1,21 @@
+{
+  "name": "app-lifecycle",
+  "displayName": "App Lifecycle",
+  "description": "Requirements → design → build → test → deploy for apps, websites and APIs, with persistent, traceable state so incremental changes stay consistent",
+  "author": {
+    "name": "Bibhu Mishra",
+    "url": "https://github.com/mishrabp"
+  },
+  "license": "MIT",
+  "keywords": [
+    "sdlc",
+    "requirements",
+    "design",
+    "testing",
+    "deployment",
+    "traceability",
+    "mcp"
+  ],
+  "homepage": "https://github.com/mishrabp/ai-agent-kits/tree/main/claude/app-lifecycle-kit",
+  "repository": "https://github.com/mishrabp/ai-agent-kits"
+}

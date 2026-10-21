@@ -1,0 +1,11 @@
+{
+  "name": "hello-kit",
+  "description": "Hello-world plugin: one skill, one agent and one connector",
+  "author": {
+    "name": "Bibhu Mishra",
+    "url": "https://github.com/mishrabp"
+  },
+  "homepage": "https://github.com/mishrabp/ai-agent-kits/tree/main/claude/hello-kit",
+  "repository": "https://github.com/mishrabp/ai-agent-kits",
+  "license": "MIT"
+}
