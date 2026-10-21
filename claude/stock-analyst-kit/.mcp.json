@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "market": {
+      "command": "python3",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/server/stock_mcp.py"],
+      "env": {
+        "STOCK_KIT_DATA": "${CLAUDE_PLUGIN_DATA}"
+      }
+    }
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "name": "stock-analyst-kit",
+  "displayName": "Stock Analyst Kit",
+  "description": "Analyzes the top 10 holdings of QQQ and SPY (technicals, fundamentals, sentiment, news, earnings) and reports which stocks could gain 5% or more within a month, with entry and exit prices and a confidence level backed by a 3-year backtest",
+  "author": {
+    "name": "Bibhu Mishra",
+    "url": "https://github.com/mishrabp"
+  },
+  "homepage": "https://github.com/mishrabp/ai-agent-kits/tree/main/claude/stock-analyst-kit",
+  "repository": "https://github.com/mishrabp/ai-agent-kits",
+  "license": "MIT",
+  "keywords": ["stocks", "investing", "technical-analysis", "fundamental-analysis", "earnings", "yfinance", "mcp"]
+}

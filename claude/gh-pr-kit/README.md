@@ -52,8 +52,8 @@ Or paste this link into your browser to jump straight to the install dialog:
 vscode://anthropic.claude-code/install-plugin?plugin=gh-pr-kit&marketplace=mishrabp/ai-agent-kits
 ```
 
-Then type `/gh-pr-kit:pr-review cli/cli#14763` in the panel, or just ask, for example "review PR 42". The VS Code extension, the CLI
-and the Desktop app share their plugins, so installing in one makes it available in the others.
+Then type `/gh-pr-kit:pr-review cli/cli#14763` in the panel, or just ask, for example "review PR 42". The VS Code extension and the
+Claude Code CLI on the same machine share their plugins, so installing in one makes it available in the other.
 
 ### Claude Code CLI
 
@@ -65,11 +65,35 @@ claude plugin update gh-pr-kit@ai-agent-kits      # later, to get new versions
 
 ### Claude Desktop
 
-In the **Code** tab, start a **Local** session, click **+** next to the prompt box and choose **Add plugins** (or
-**Plugins → Browse plugins**), then install **gh-pr-kit**. If the `ai-agent-kits` marketplace isn't listed yet, run
-the two CLI commands above once; the Desktop app reads the same settings as the CLI.
+The Desktop app has its own plugin manager, so you don't need the terminal.
 
-**Cloud** sessions in the Desktop app work like claude.ai/code; see the next section.
+Install it by uploading a zip:
+
+1. Download the repository (**Code › Download ZIP** on GitHub) and unzip it.
+2. Zip the `claude/gh-pr-kit` folder by itself, so the archive holds `gh-pr-kit/.claude-plugin/plugin.json`.
+   On Windows: right-click the folder › **Send to** › **Compressed (zipped) folder**.
+3. Click **Customize** in the sidebar, then **Plugins › ＋ Add › Upload plugin**, and select the zip.
+   **gh-pr-kit** then appears under **Yours**.
+
+An uploaded copy doesn't update by itself: to get a newer version, upload a new zip.
+
+The install is saved to your claude.ai account, not to one machine. Each part of the Desktop app loads a different
+part of a plugin:
+
+| | Works? |
+|---|---|
+| **Code** tab | Yes, everything: `/gh-pr-kit:pr-review owner/repo#123`. If it doesn't show up in a Code session, install it there with **+ › Add plugins** |
+| **Cowork** | Yes: skills, the `pr-reviewer` agent and the GitHub connector load. Cowork doesn't ask for the token, so the connector uses your `gh auth login` session or `GH_TOKEN`, or reads public repositories without a token |
+| **Chat** | No: chat ignores local MCP servers and agents, so the skills can't read pull requests |
+
+Things to know:
+
+- **Python on Windows.** The kit's MCP server starts with `python3`. On Windows that command often doesn't exist or opens
+  the Microsoft Store. Install Python from the Microsoft Store (it provides `python3`), then check that `python3 --version`
+  works in a new terminal before you start a session.
+- **WSL.** The Desktop app doesn't load plugins in WSL sessions. A kit you installed with the CLI inside WSL stays in WSL's
+  `~/.claude` and doesn't appear in the Windows app; install it through **Customize** instead.
+- **Cloud** sessions in the Desktop app work like claude.ai/code; see the next section.
 
 ### Claude cloud sessions (claude.ai/code, Desktop **Cloud**, mobile)
 

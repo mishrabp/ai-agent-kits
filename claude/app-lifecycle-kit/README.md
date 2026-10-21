@@ -99,8 +99,8 @@ Or paste this link into your browser to jump straight to the install dialog:
 vscode://anthropic.claude-code/install-plugin?plugin=app-lifecycle&marketplace=mishrabp/ai-agent-kits
 ```
 
-Then type `/app-lifecycle:requirements a notes API with tags` in the panel, or just ask, for example "build me a notes API". The VS Code extension, the CLI
-and the Desktop app share their plugins, so installing in one makes it available in the others.
+Then type `/app-lifecycle:requirements a notes API with tags` in the panel, or just ask, for example "build me a notes API". The VS Code extension and the
+Claude Code CLI on the same machine share their plugins, so installing in one makes it available in the other.
 
 ### Claude Code CLI
 
@@ -112,11 +112,35 @@ claude plugin update app-lifecycle@ai-agent-kits      # later, to get new versio
 
 ### Claude Desktop
 
-In the **Code** tab, start a **Local** session, click **+** next to the prompt box and choose **Add plugins** (or
-**Plugins → Browse plugins**), then install **app-lifecycle**. If the `ai-agent-kits` marketplace isn't listed yet, run
-the two CLI commands above once; the Desktop app reads the same settings as the CLI.
+The Desktop app has its own plugin manager, so you don't need the terminal.
 
-**Cloud** sessions in the Desktop app work like claude.ai/code; see the next section.
+Install it by uploading a zip:
+
+1. Download the repository (**Code › Download ZIP** on GitHub) and unzip it.
+2. Zip the `claude/app-lifecycle-kit` folder by itself, so the archive holds `app-lifecycle-kit/.claude-plugin/plugin.json`.
+   On Windows: right-click the folder › **Send to** › **Compressed (zipped) folder**.
+3. Click **Customize** in the sidebar, then **Plugins › ＋ Add › Upload plugin**, and select the zip.
+   **app-lifecycle** then appears under **Yours**.
+
+An uploaded copy doesn't update by itself: to get a newer version, upload a new zip.
+
+The install is saved to your claude.ai account, not to one machine. Each part of the Desktop app loads a different
+part of a plugin:
+
+| | Works? |
+|---|---|
+| **Code** tab | Yes, everything, and this is where it's meant to run: open your project folder, then `/app-lifecycle:requirements ...`. If it doesn't show up in a Code session, install it there with **+ › Add plugins** |
+| **Cowork** | Mostly: skills, agents, hooks and the lifecycle connector load, but it keeps its state in the folder the session works in, so point Cowork at your project folder |
+| **Chat** | No: chat ignores the connector, agents and hooks the workflow depends on |
+
+Things to know:
+
+- **Python on Windows.** The kit's MCP server starts with `python3`. On Windows that command often doesn't exist or opens
+  the Microsoft Store. Install Python from the Microsoft Store (it provides `python3`), then check that `python3 --version`
+  works in a new terminal before you start a session.
+- **WSL.** The Desktop app doesn't load plugins in WSL sessions. A kit you installed with the CLI inside WSL stays in WSL's
+  `~/.claude` and doesn't appear in the Windows app; install it through **Customize** instead.
+- **Cloud** sessions in the Desktop app work like claude.ai/code; see the next section.
 
 ### Claude cloud sessions (claude.ai/code, Desktop **Cloud**, mobile)
 

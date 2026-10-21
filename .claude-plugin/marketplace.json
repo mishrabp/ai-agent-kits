@@ -1,7 +1,10 @@
 {
   "name": "ai-agent-kits",
-  "owner": { "name": "Bibhu Mishra", "url": "https://github.com/mishrabp" },
-  "description": "Claude Code plugins by Bibhu Mishra: a hello-world kit, GitHub PR review, and an app lifecycle kit",
+  "owner": {
+    "name": "Bibhu Mishra",
+    "url": "https://github.com/mishrabp"
+  },
+  "description": "Claude Code plugins by Bibhu Mishra: a hello-world kit, GitHub PR review, an app lifecycle kit and a stock analyst",
   "plugins": [
     {
       "name": "hello-kit",
@@ -17,6 +20,11 @@
       "name": "app-lifecycle",
       "source": "./claude/app-lifecycle-kit",
       "description": "Requirements → design → build → test → deploy with persistent, traceable state"
+    },
+    {
+      "name": "stock-analyst-kit",
+      "source": "./claude/stock-analyst-kit",
+      "description": "Top QQQ and SPY stocks: technicals, fundamentals, sentiment, news and earnings, with backtest-anchored 1-month predictions"
     }
   ]
 }

@@ -19,6 +19,7 @@
       "type": "string",
       "title": "GitHub token",
       "description": "Personal access token with repo read access (and pull request write access to post reviews). Leave empty to use your `gh auth login` session.",
+      "default": "",
       "sensitive": true
     }
   },

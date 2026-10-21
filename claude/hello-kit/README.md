@@ -110,8 +110,8 @@ Or paste this link into your browser to jump straight to the install dialog:
 vscode://anthropic.claude-code/install-plugin?plugin=hello-kit&marketplace=mishrabp/ai-agent-kits
 ```
 
-Then type `/hello-kit:hello Ada` in the panel, or just ask, for example "say hello to Ada". The VS Code extension, the CLI
-and the Desktop app share their plugins, so installing in one makes it available in the others.
+Then type `/hello-kit:hello Ada` in the panel, or just ask, for example "say hello to Ada". The VS Code extension and the
+Claude Code CLI on the same machine share their plugins, so installing in one makes it available in the other.
 
 ### Claude Code CLI
 
@@ -123,11 +123,41 @@ claude plugin update hello-kit@ai-agent-kits      # later, to get new versions
 
 ### Claude Desktop
 
-In the **Code** tab, start a **Local** session, click **+** next to the prompt box and choose **Add plugins** (or
-**Plugins → Browse plugins**), then install **hello-kit**. If the `ai-agent-kits` marketplace isn't listed yet, run
-the two CLI commands above once; the Desktop app reads the same settings as the CLI.
+The Desktop app has its own plugin manager, so you don't need the terminal.
 
-**Cloud** sessions in the Desktop app work like claude.ai/code; see the next section.
+**From Anthropic's directory.** hello-kit is submitted to Anthropic's plugin directory (listed as **Hello Kit**), which
+reviews and security-scans every plugin before listing it. Once it's listed, open **Customize** in the sidebar, then **Plugins ›
+Discover**, search for `hello-kit` and click **Install**. Directory plugins update on their own when a new version is
+published. The directory is available on Pro, Max, Team and Enterprise plans (on Team and Enterprise, if your
+organization keeps it turned on).
+
+**By uploading a zip**, for example while the directory review is still pending:
+
+1. Download the repository (**Code › Download ZIP** on GitHub) and unzip it.
+2. Zip the `claude/hello-kit` folder by itself, so the archive holds `hello-kit/.claude-plugin/plugin.json`.
+   On Windows: right-click the folder › **Send to** › **Compressed (zipped) folder**.
+3. Click **Customize** in the sidebar, then **Plugins › ＋ Add › Upload plugin**, and select the zip.
+   **hello-kit** then appears under **Yours**.
+
+An uploaded copy doesn't update by itself: to get a newer version, upload a new zip.
+
+The install is saved to your claude.ai account, not to one machine. Each part of the Desktop app loads a different
+part of a plugin:
+
+| | Works? |
+|---|---|
+| **Code** tab | Yes, everything: `/hello-kit:hello Ada`. If it doesn't show up in a Code session, install it there with **+ › Add plugins** |
+| **Cowork** | Yes: the skill, the `poet` agent and the fortune connector all load |
+| **Chat** | Partly: only the skill loads. Chat ignores agents and local MCP servers, so Claude makes up the fortune and the poem itself |
+
+Things to know:
+
+- **Python on Windows.** The kit's MCP server starts with `python3`. On Windows that command often doesn't exist or opens
+  the Microsoft Store. Install Python from the Microsoft Store (it provides `python3`), then check that `python3 --version`
+  works in a new terminal before you start a session.
+- **WSL.** The Desktop app doesn't load plugins in WSL sessions. A kit you installed with the CLI inside WSL stays in WSL's
+  `~/.claude` and doesn't appear in the Windows app; install it through **Customize** instead.
+- **Cloud** sessions in the Desktop app work like claude.ai/code; see the next section.
 
 ### Claude cloud sessions (claude.ai/code, Desktop **Cloud**, mobile)
 

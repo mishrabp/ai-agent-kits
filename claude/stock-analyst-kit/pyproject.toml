@@ -1,0 +1,18 @@
+# Python project metadata for the plugin's code. Claude Code installs plugins without running any install step,
+# so the server installs these dependencies itself on first start, into the plugin's data folder (server/deps.py).
+# Claude Code starts it with plain `python3` (see .mcp.json). `version` here is informational: Claude Code
+# versions the plugin by git commit.
+#
+#   uv run -m unittest discover -s tests
+#   uv run scripts/smoke_test.py [SYMBOL]
+[project]
+name = "stock-analyst-kit"
+version = "1.0.0"
+description = "Claude Code plugin: stock analysis of the top QQQ and SPY holdings with backtest-anchored confidence"
+license = { text = "MIT" }
+requires-python = ">=3.9"
+# Keep in sync with REQUIREMENTS in server/deps.py.
+dependencies = ["yfinance>=0.2.54", "ddgs>=9", "beautifulsoup4>=4.12"]
+
+[tool.uv]
+package = false   # scripts run in place; nothing is built or installed
