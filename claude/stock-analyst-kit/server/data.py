@@ -72,11 +72,30 @@ def safe(fn, default=None):
 
 # ---------------------------------------------------------------- prices and holdings
 
+def completed_sessions(df):
+    """Drop today's bar while the New York session is still open: daily signals use completed closes only, so two
+    runs on the same day see the same data."""
+    if df.empty:
+        return df
+    try:
+        from zoneinfo import ZoneInfo
+
+        tz = ZoneInfo("America/New_York")
+    except Exception:  # noqa: BLE001 - Windows has no system time-zone database; yfinance always installs pytz
+        import pytz
+
+        tz = pytz.timezone("America/New_York")
+    now = dt.datetime.now(tz)
+    if str(df.index[-1])[:10] == now.strftime("%Y-%m-%d") and (now.hour, now.minute) < (16, 15):
+        return df.iloc[:-1]
+    return df
+
+
 def history(symbol, period="3y"):
     import yfinance as yf
 
     def fetch():
-        df = yf.Ticker(symbol).history(period=period, auto_adjust=True)
+        df = completed_sessions(yf.Ticker(symbol).history(period=period, auto_adjust=True))
         if df.empty:
             raise ValueError(f"No price history for {symbol}")
         return {
@@ -126,11 +145,14 @@ def fundamentals(symbol):
         {k: v for k, v in rec.items() if k != "index"} for rec in frame_records(t.recommendations, 2)
     ], [])
     cutoff = (dt.datetime.now() - dt.timedelta(days=45)).strftime("%Y-%m-%d")
-    out["analysts"]["rating_changes_last_45d"] = safe(lambda: [
+    recent = safe(lambda: [rec for rec in frame_records(t.upgrades_downgrades, 40) if rec["index"] >= cutoff], [])
+    out["analysts"]["upgrades_45d"] = sum(1 for rec in recent if rec.get("Action") == "up")
+    out["analysts"]["downgrades_45d"] = sum(1 for rec in recent if rec.get("Action") == "down")
+    out["analysts"]["rating_changes_last_45d"] = [
         f"{rec['index']} {rec.get('Firm')}: {rec.get('FromGrade') or '-'} -> {rec.get('ToGrade')} ({rec.get('Action')})"
         + (f", target {rec.get('priorPriceTarget')} -> {rec.get('currentPriceTarget')}" if rec.get("currentPriceTarget") else "")
-        for rec in frame_records(t.upgrades_downgrades, 25) if rec["index"] >= cutoff
-    ][:10], [])
+        for rec in recent
+    ][:10]
     return out
 
 
@@ -237,7 +259,8 @@ def market_overview():
     import yfinance as yf
 
     symbols = ["SPY", "QQQ", "^VIX", "^TNX", *SECTORS]
-    df = cached(("overview",), 900, lambda: yf.download(symbols, period="1y", progress=False, auto_adjust=True)["Close"])
+    df = cached(("overview",), 900, lambda: completed_sessions(
+        yf.download(symbols, period="1y", progress=False, auto_adjust=True)["Close"]))
     out = {"as_of": str(df.index[-1])[:10], "indexes": {}, "sectors_1m": {}}
     for sym in ["SPY", "QQQ"]:
         c = [float(x) for x in df[sym].dropna()]
@@ -265,20 +288,38 @@ def market_overview():
 
 # ---------------------------------------------------------------- one-call stock bundle
 
+def market_state():
+    """The market inputs the scoring rules use, identical for every stock in a run: SPY trend and the VIX close."""
+    def build():
+        spy = history("SPY")["close"]
+        vix = history("^VIX", period="3mo")["close"]
+        return {
+            "spy": {"above_sma50": spy[-1] > an.sma_series(spy, 50)[-1], "above_sma200": spy[-1] > an.sma_series(spy, 200)[-1]},
+            "vix": round(vix[-1], 2),
+        }
+    return cached(("market_state",), 900, build)
+
+
 def analyze(symbol, target=0.05, horizon=21):
+    import scoring
+
     hist = history(symbol)
     spy = safe(lambda: history("SPY"), None)
     tech = an.technical_summary(hist["dates"], hist["open"], hist["high"], hist["low"], hist["close"], hist["volume"],
                                 bench_closes=spy["close"] if isinstance(spy, dict) and "close" in spy else None,
                                 target=target, horizon=horizon)
     fund = safe(lambda: fundamentals(symbol))
+    earn = safe(lambda: earnings(symbol, hist))
+    market = safe(lambda: market_state())
     name = fund.get("name") if isinstance(fund, dict) else None
+    ok = lambda d: d if isinstance(d, dict) and "error" not in d else {}  # noqa: E731 - a failed source scores 0
     return {
         "symbol": symbol,
         "name": name,
+        "scores": scoring.score(tech, ok(fund), ok(earn), ok(market), horizon),
         "technicals": tech,
         "fundamentals": fund,
-        "earnings": safe(lambda: earnings(symbol, hist)),
+        "earnings": earn,
         "sentiment": {
             "stocktwits": safe(lambda: stocktwits(symbol)),
             "news": safe(lambda: news(f"{name or symbol} stock", days=7, limit=8)["items"], []),

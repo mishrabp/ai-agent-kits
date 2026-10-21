@@ -1,6 +1,6 @@
 {
   "name": "stock-analyst-kit",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "displayName": "Stock Analyst Kit",
   "description": "Analyzes the top 10 holdings of QQQ and SPY (technicals, fundamentals, sentiment, news, earnings) and reports which stocks could gain 5% or more within a month, with entry and exit prices and a confidence level backed by a 3-year backtest",
   "icon": "./.claude-plugin/icon.png",

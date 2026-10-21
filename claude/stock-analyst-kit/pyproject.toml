@@ -7,7 +7,7 @@
 #   uv run scripts/smoke_test.py [SYMBOL]
 [project]
 name = "stock-analyst-kit"
-version = "1.0.1"
+version = "1.0.2"
 description = "Claude Code plugin: stock analysis of the top QQQ and SPY holdings with backtest-anchored confidence"
 license = { text = "MIT" }
 requires-python = ">=3.9"

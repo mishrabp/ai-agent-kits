@@ -22,28 +22,55 @@ For each stock it looks at:
 
 ## How the confidence is computed
 
-A confidence level is only useful if it means something you can check, so the kit doesn't let the model make it up.
+A confidence level is only useful if it means something you can check, and if the same data always gives the same
+answer. So almost all of it is computed by code (`server/analysis.py` and `server/scoring.py`), from completed daily
+closes; during market hours, today's unfinished session isn't used.
 
-1. **Anchor from a backtest.** For each stock the server replays the last 3 years: on every day that looked like today
-   (same side of the 50-day average, RSI within 10 points), it buys at the close and checks whether the price reached
-   +5% **before** hitting a stop of 1.5 x ATR (3-10%) within 21 trading days. That hit rate is the anchor. A day that
-   touches both counts as a loss.
-2. **Adjustments, at most 15 points in total**, each tied to a number or a headline: trend and momentum, fundamentals
-   and analysts, sentiment and news, the market regime, and an earnings report inside the horizon (usually a penalty,
-   because an earnings move can be bigger than the stop).
-3. **Confidence = anchor + adjustments**, never above 90%. A stock qualifies only if its exit is at least 5% above its
-   entry and its confidence is at least 80%.
+**1. Anchor: the stock's own history.** The server replays the last 3 years. On every day that looked like today
+(same side of the 50-day average, RSI14 within 10 points), it buys at the close and checks whether the price reached
+**+5% before** a stop of 1.5 x ATR14 (kept between 3% and 10%) within **21 trading days**. A day that touches both
+counts as a loss. The hit rate is the anchor (all 3-year windows are used if fewer than 60 similar days exist). This
+is a plain historical simulation, so the number is reproducible and auditable.
 
-The report shows the anchor and each adjustment for every stock. Expect few or no qualifying stocks on many days: a
-large, steady company like Apple rarely gains 5% in a month before falling 3%, and the report says so instead of
-stretching the numbers. This is research software, not financial advice.
+**2. Rule-based adjustments.** Each rule is a long-established, published signal. Each adds or subtracts points:
+
+| Component | Points | Rules | Source |
+|---|---|---|---|
+| Trend and momentum | -5 to +5 | +-1 each: price vs 200-day SMA; 50-day vs 200-day SMA (golden / death cross); 12-1 month return (12 months ago to 1 month ago); 3-month return vs SPY. -1 if RSI14 > 70 | Faber (2007); Moskowitz, Ooi & Pedersen (2012); Jegadeesh & Titman (1993); Wilder (1978) |
+| Fundamentals and analysts | -5 to +5 | EPS-estimate revisions in 30 days (+-2 if 75%+ one way, +-1 if tilted); upgrades vs downgrades in 45 days (+-1); last EPS surprise of 2%+ (+-1); mean analyst target 15%+ above (+1) or below (-1) the price | Chan, Jegadeesh & Lakonishok (1996); Womack (1996); Bernard & Thomas (1989); Brav & Lehavy (2003) |
+| Market regime | -5 to +3 | SPY above (+1) or below (-2) its 200-day SMA; above (+1) or below (-1) its 50-day SMA; VIX < 20 (+1), 20-25 (0), 25-30 (-1), > 30 (-2) | Faber (2007); Whaley (2009) on the VIX |
+| Earnings inside the horizon | -10 to +3 | -2 for any report inside the horizon; a further -3 if the stock's typical earnings-day move is at least the stop distance, or -6 if it's 1.5x; +2 if it beat estimates in each of the last 4 quarters | the stock's own earnings history; Bernard & Thomas (1989) |
+
+Price vs the 50-day average isn't scored, because the anchor already conditions on it. Valuation ratios aren't scored
+either: the evidence for value investing covers years, not a one-month horizon.
+
+**3. One judgment: news and sentiment, -5 to +5.** The analyst agent sets this from the last 7 days of headlines. It is
+0 unless an item is material (earnings or guidance, M&A, regulation, a major product or contract), and the report
+names the headline. Stocktwits alone moves it at most 1 point.
+
+**Confidence = anchor + the adjustments (capped at +-15 in total), kept between 5% and 90%.** A stock qualifies only at
+80% or more. With the same closing prices, two runs give the same anchor and rule points; only the news points can
+differ, by a few points when the headlines change.
+
+**What this is and isn't.** The anchor is measured. The signals in step 2 are among the best-documented in finance,
+but their point values are fixed, simple weights chosen for this kit, not fitted to data. Past behavior doesn't
+guarantee future results, an earnings report can move a stock past any stop, and on many days nothing reaches 80%;
+the report says so rather than stretching the numbers. This is research software, not financial advice.
+
+References: Faber, *A Quantitative Approach to Tactical Asset Allocation* (Journal of Wealth Management, 2007);
+Moskowitz, Ooi & Pedersen, *Time Series Momentum* (Journal of Financial Economics, 2012); Jegadeesh & Titman,
+*Returns to Buying Winners and Selling Losers* (Journal of Finance, 1993); Wilder, *New Concepts in Technical Trading
+Systems* (1978); Chan, Jegadeesh & Lakonishok, *Momentum Strategies* (Journal of Finance, 1996); Womack, *Do Brokerage
+Analysts' Recommendations Have Investment Value?* (Journal of Finance, 1996); Bernard & Thomas, *Post-Earnings-
+Announcement Drift* (Journal of Accounting Research, 1989); Brav & Lehavy, *An Empirical Analysis of Analysts' Target
+Prices* (Journal of Finance, 2003); Whaley, *Understanding the VIX* (Journal of Portfolio Management, 2009).
 
 ## What's in it
 
 | Piece | File | What it does |
 |---|---|---|
-| **Connector** (MCP server `market`) | `server/stock_mcp.py`, `server/data.py`, `server/analysis.py`, `server/deps.py`, `server/mcp_stdio.py` | Five read-only tools: `get_top_holdings`, `get_market_overview`, `analyze_stock`, `get_news`, `read_article` |
-| **Agent** | `agents/equity-analyst.md` | Analyzes a batch of tickers with the confidence rules above and returns a fixed-format block per stock |
+| **Connector** (MCP server `market`) | `server/stock_mcp.py`, `server/data.py`, `server/analysis.py`, `server/scoring.py`, `server/deps.py`, `server/mcp_stdio.py` | Five read-only tools: `get_top_holdings`, `get_market_overview`, `analyze_stock`, `get_news`, `read_article` |
+| **Agent** | `agents/equity-analyst.md` | Analyzes a batch of tickers: copies the computed anchor and rule points, sets the news-and-sentiment points, and returns a fixed-format block per stock |
 | **Skill** | `skills/stock-report/SKILL.md` | `/stock-analyst-kit:stock-report`: builds the universe, reads the market, runs analysts in parallel, checks their arithmetic, writes the report |
 
 Data comes from **yfinance** (Yahoo Finance prices, fundamentals, earnings, analysts and ETF holdings), **ddgs**
@@ -289,7 +316,7 @@ What are the top 10 holdings of QQQ right now?
 ## Develop
 
 ```bash
-python3 -m unittest discover -s tests     # indicator and backtest math, no network
+python3 -m unittest discover -s tests     # indicators, backtest and scoring rules, no network
 python3 scripts/smoke_test.py NVDA        # every tool against live data (installs packages on first run)
 claude plugin validate .
 claude --plugin-dir .                     # try the plugin in a real session

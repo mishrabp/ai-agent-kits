@@ -1,0 +1,15 @@
+{
+  "name": "options-analyst-kit",
+  "version": "1.0.0",
+  "displayName": "Options Analyst Kit",
+  "description": "Scans every S&P 500 and Nasdaq-100 stock for cash-secured puts with strikes under $100 that have an 80% or higher probability of profit over about 2 or 4 weeks, by Black-Scholes and by the stock's own history, and reports them with returns, risks and a reviewed verdict",
+  "icon": "./.claude-plugin/icon.png",
+  "author": {
+    "name": "Bibhu Mishra",
+    "url": "https://github.com/mishrabp"
+  },
+  "homepage": "https://github.com/mishrabp/ai-agent-kits/tree/main/claude/options-analyst-kit",
+  "repository": "https://github.com/mishrabp/ai-agent-kits",
+  "license": "MIT",
+  "keywords": ["options", "cash-secured-puts", "probability-of-profit", "black-scholes", "yfinance", "mcp"]
+}

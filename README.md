@@ -9,10 +9,11 @@ in this same repo.
 | [gh-pr-kit](claude/gh-pr-kit) | Claude Code | Review GitHub pull requests and draft release notes. |
 | [app-lifecycle](claude/app-lifecycle-kit) | Claude Code | Requirements → design → build → test → deploy, with persistent, traceable state. |
 | [stock-analyst-kit](claude/stock-analyst-kit) | Claude Code | Analyzes the top 10 QQQ and SPY holdings and reports which could gain 5%+ within a month, with entry/exit prices and backtest-anchored confidence. |
+| [options-analyst-kit](claude/options-analyst-kit) | Claude Code | Scans every S&P 500 and Nasdaq-100 stock for cash-secured puts under $100 with an 80%+ probability of profit over 2 or 4 weeks, by Black-Scholes and by history. |
 
 All the code is Python. You need **`python3` 3.9 or newer** on your `PATH`. hello-kit, gh-pr-kit and app-lifecycle use
-only the standard library; stock-analyst-kit installs its packages (yfinance, ddgs, beautifulsoup4) by itself on first
-use, with `uv` or `pip`.
+only the standard library; stock-analyst-kit and options-analyst-kit install their packages (yfinance, ddgs, beautifulsoup4) by
+themselves on first use, with `uv` or `pip`.
 
 ## Install in Claude Code
 
@@ -24,6 +25,7 @@ claude plugin install hello-kit@ai-agent-kits
 claude plugin install gh-pr-kit@ai-agent-kits
 claude plugin install app-lifecycle@ai-agent-kits
 claude plugin install stock-analyst-kit@ai-agent-kits
+claude plugin install options-analyst-kit@ai-agent-kits
 ```
 
 You can also do this inside a session with `/plugin`. The Claude Code CLI, the VS Code extension and the Desktop
@@ -80,7 +82,8 @@ ai-agent-kits/
 │   ├── hello-kit/
 │   ├── gh-pr-kit/
 │   ├── app-lifecycle-kit/
-│   └── stock-analyst-kit/
+│   ├── stock-analyst-kit/
+│   └── options-analyst-kit/
 └── _doc/                             reference material
 ```
 

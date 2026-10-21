@@ -55,10 +55,12 @@ def get_market_overview(data):
 
 
 @tool("analyze_stock", "Analyze a stock",
-      "One-call analysis bundle for a stock: technicals (trend, momentum, volatility, support/resistance), a "
-      "suggested entry/target/stop, probability anchors from a 3-year backtest of hitting the target before the stop "
-      "within the horizon, fundamentals, analyst targets and rating changes, next earnings date with estimates, "
-      "revisions, past surprises and typical earnings moves, Stocktwits sentiment and recent news headlines.",
+      "One-call analysis bundle for a stock: `scores` (the backtest anchor plus rule-based points for trend, "
+      "fundamentals and analysts, market regime and earnings, with the rules that fired; only news and sentiment is "
+      "left to judge), technicals (trend, momentum, volatility, support/resistance), a suggested entry/target/stop, "
+      "probability anchors from a 3-year backtest of hitting the target before the stop within the horizon, "
+      "fundamentals, analyst targets and rating changes, next earnings date with estimates, revisions, past surprises "
+      "and typical earnings moves, Stocktwits sentiment and recent news headlines. Uses completed daily closes only.",
       {
           "symbol": string("Stock ticker, e.g. NVDA. Use '-' for share classes, e.g. BRK-B"),
           "target_return": {"type": "number", "minimum": 0.01, "maximum": 0.5, "default": 0.05,

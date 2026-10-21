@@ -4,7 +4,7 @@
     "name": "Bibhu Mishra",
     "url": "https://github.com/mishrabp"
   },
-  "description": "Claude Code plugins by Bibhu Mishra: a hello-world kit, GitHub PR review, an app lifecycle kit and a stock analyst",
+  "description": "Claude Code plugins by Bibhu Mishra: a hello-world kit, GitHub PR review, an app lifecycle kit, a stock analyst and an options analyst",
   "plugins": [
     {
       "name": "hello-kit",
@@ -25,6 +25,11 @@
       "name": "stock-analyst-kit",
       "source": "./claude/stock-analyst-kit",
       "description": "Top QQQ and SPY stocks: technicals, fundamentals, sentiment, news and earnings, with backtest-anchored 1-month predictions"
+    },
+    {
+      "name": "options-analyst-kit",
+      "source": "./claude/options-analyst-kit",
+      "description": "Cash-secured puts under $100 on S&P 500 and Nasdaq-100 stocks with an 80%+ probability of profit over 2 or 4 weeks"
     }
   ]
 }

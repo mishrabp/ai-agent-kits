@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "options": {
+      "command": "python3",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/server/options_mcp.py"],
+      "env": {
+        "OPTIONS_KIT_DATA": "${CLAUDE_PLUGIN_DATA}"
+      }
+    }
+  }
+}

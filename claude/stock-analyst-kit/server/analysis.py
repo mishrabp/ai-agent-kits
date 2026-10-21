@@ -194,6 +194,9 @@ def technical_summary(dates, opens, highs, lows, closes, volumes, bench_closes=N
             "bollinger_pct_b": r(bb_pct_b),
             "return_1w": r(pct_change(closes, 5), 4), "return_1m": r(pct_change(closes, 21), 4),
             "return_3m": r(pct_change(closes, 63), 4), "return_6m": r(pct_change(closes, 126), 4),
+            # 12-1 momentum: the return from 12 months ago to 1 month ago, skipping the latest month
+            # (the standard definition in the momentum literature, e.g. Moskowitz, Ooi & Pedersen 2012).
+            "return_12m_ex_1m": r(closes[-22] / closes[-253] - 1, 4) if len(closes) > 253 else None,
             "relative_strength_vs_spy_3m": r(rel_strength, 4),
         },
         "volatility": {

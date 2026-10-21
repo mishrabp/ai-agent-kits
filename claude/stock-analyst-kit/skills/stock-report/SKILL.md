@@ -26,11 +26,11 @@ The arguments may add tickers to analyze or change these numbers (for example `T
    today's date, its tickers, the market backdrop summary, the target gain, the horizon in trading days and the minimum
    confidence. Wait for all of them.
 
-4. **Check the results.** For every block, confirm that the confidence equals the anchor plus the listed adjustments
-   (a difference of 1 point from rounding to whole percents is fine and needs no note), that the adjustments total no
-   more than +/-15 points, and that the confidence is at most 90%. Show every confidence and anchor as a whole percent.
-   If a block breaks a rule, correct the number and mention the correction under that stock. A stock **qualifies** only if its exit is at
-   least the target gain above its entry and its confidence is at least the minimum.
+4. **Check the results.** For every block, confirm that the rule points (trend, fundamentals, market, earnings) are
+   the ones `analyze_stock` returned, that the news points are between -5 and +5 and name a headline (or are 0), and
+   that confidence = anchor + clamp(rules + news, -15, +15), kept between 5% and 90%. Show every confidence and anchor
+   as a whole percent. If a block breaks a rule, correct it and mention the correction under that stock. A stock
+   **qualifies** only if its confidence is at least the minimum.
 
 5. **Write the report** in this format, show it in full, and save it as `stock-report-YYYY-MM-DD.md` in the current
    directory:
@@ -60,11 +60,11 @@ One section per stock in the table above:
 | Step | Points | Evidence |
 |------|--------|----------|
 | Anchor: 3-year backtest, similar setups | K% | n=N; target hit before stop within 21 trading days |
-| Trend and momentum | +a | ... |
-| Fundamentals and analysts | +b | ... |
-| Sentiment and news | +c | ... |
-| Market regime | +d | ... |
-| Earnings inside horizon | -e | ... |
+| Trend and momentum (rule) | +a | the rules that fired, e.g. "+1 price above 200-day SMA" |
+| Fundamentals and analysts (rule) | +b | ... |
+| Market regime (rule) | +d | ... |
+| Earnings inside horizon (rule) | -e | ... |
+| News and sentiment (analyst judgment) | +c | the headline and date, or "no material news" |
 | **Confidence** | **C%** | |
 
 Then the analyst's "why" bullets and "risks" bullets.
@@ -79,7 +79,10 @@ Then the analyst's "why" bullets and "risks" bullets.
 
 - **Confidence** is an estimate of the chance that the stock reaches the exit price before the stop, within the
   horizon. It starts from how often that actually happened in similar setups for this stock over the last 3 years,
-  adjusted by at most 15 points for trend, fundamentals, analysts, sentiment, the market and earnings.
+  adjusted by at most 15 points. Trend, fundamentals and analysts, the market and earnings are scored by fixed,
+  published rules, so the same closing prices always give the same points; only news and sentiment (at most +-5) is
+  the analyst's judgment.
+- Prices are completed daily closes: during market hours, today's unfinished session is not used.
 - Past behavior does not guarantee future results, and an earnings report inside the horizon can move a stock by
   more than the stop.
 - This report is generated from public market data for research and education. It is not financial advice.
