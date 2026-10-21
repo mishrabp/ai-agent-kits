@@ -1,7 +1,9 @@
 {
   "name": "app-lifecycle",
+  "version": "1.0.0",
   "displayName": "App Lifecycle",
   "description": "Requirements → design → build → test → deploy for apps, websites and APIs, with persistent, traceable state so incremental changes stay consistent",
+  "icon": "./.claude-plugin/icon.png",
   "author": {
     "name": "Bibhu Mishra",
     "url": "https://github.com/mishrabp"

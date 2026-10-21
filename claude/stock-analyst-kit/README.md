@@ -263,5 +263,6 @@ If you registered your clone as a local marketplace (`claude plugin marketplace 
 pick up a new or changed kit with `claude plugin marketplace update ai-agent-kits`, then
 `claude plugin install stock-analyst-kit@ai-agent-kits` and `/reload-plugins`.
 
-To release, run the tests, then push to `main`. `plugin.json` has no `version`, so Claude Code versions the plugin by
-git commit and users get it with `claude plugin update stock-analyst-kit@ai-agent-kits`.
+To release, run the tests, raise `version` in `.claude-plugin/plugin.json` (and in `pyproject.toml`), then push to `main`.
+Users get the new version with `claude plugin update stock-analyst-kit@ai-agent-kits`; a push that doesn't change `version`
+doesn't reach them. Directory listings update after the new version passes review.

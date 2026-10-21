@@ -1,6 +1,8 @@
 {
   "name": "hello-kit",
+  "version": "1.0.0",
   "description": "Hello-world plugin: one skill, one agent and one connector",
+  "icon": "./.claude-plugin/icon.png",
   "author": {
     "name": "Bibhu Mishra",
     "url": "https://github.com/mishrabp"

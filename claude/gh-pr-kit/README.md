@@ -246,9 +246,9 @@ checks). This matters because Claude Code installs plugins **without running any
 
 ## Release
 
-Push to `main`. `plugin.json` has no `version`, so Claude Code versions the plugin by git commit, and users pick up
-the change with `claude plugin update gh-pr-kit@ai-agent-kits`. Run the smoke test and `claude plugin validate .`
-before you push.
+Run the smoke test and `claude plugin validate .`, raise `version` in `.claude-plugin/plugin.json` (and in `pyproject.toml`), then push to `main`.
+Users get the new version with `claude plugin update gh-pr-kit@ai-agent-kits`; a push that doesn't change `version`
+doesn't reach them. Directory listings update after the new version passes review.
 
 ## Lessons learned while building it
 

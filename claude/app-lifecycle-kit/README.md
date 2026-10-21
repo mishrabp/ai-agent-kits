@@ -279,5 +279,6 @@ There is no build step and no `pip install`: the server and the hooks use only t
 (`src/mcp_stdio.py` implements the small part of MCP the server needs). That's deliberate, because Claude Code
 installs plugins without running any install step, so nothing could install dependencies on the user's machine.
 
-To release, run the tests and `claude plugin validate .`, then push to `main`. `plugin.json` has no `version`, so
-Claude Code versions the plugin by git commit and users get it with `claude plugin update app-lifecycle@ai-agent-kits`.
+To release, run the tests and `claude plugin validate .`, raise `version` in `.claude-plugin/plugin.json` (and in `pyproject.toml`), then push to `main`.
+Users get the new version with `claude plugin update app-lifecycle@ai-agent-kits`; a push that doesn't change `version`
+doesn't reach them. Directory listings update after the new version passes review.

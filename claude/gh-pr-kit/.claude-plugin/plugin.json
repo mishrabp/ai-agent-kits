@@ -1,7 +1,9 @@
 {
   "name": "gh-pr-kit",
+  "version": "1.0.0",
   "displayName": "GitHub PR Kit",
   "description": "Review GitHub pull requests and draft release notes: a GitHub MCP connector, a pr-reviewer subagent, and pr-review / release-notes skills",
+  "icon": "./.claude-plugin/icon.png",
   "author": {
     "name": "Bibhu Mishra",
     "url": "https://github.com/mishrabp"
