@@ -24,11 +24,6 @@ github MCP server (stdio)      ← connector, Python script (standard library on
 findings → shown to you → "Post this review?" → post_pr_review (only if you say yes)
 ```
 
-## Requirements
-
-`python3` (3.9 or newer) on the `PATH`. Nothing else: there is no `pip install` step. `pyproject.toml` records
-this (`requires-python`, empty `dependencies`), so `uv run scripts/smoke_test.py` also works.
-
 ## Authentication
 
 The connector looks for a token in this order:
@@ -40,19 +35,65 @@ The connector looks for a token in this order:
 
 Reading needs repo read access. Posting reviews also needs pull request write access.
 
-## Use it
+## Install and use it
 
-### Install
+You need **`python3` 3.9 or newer** on your `PATH`. There is nothing else to install: the code uses only the
+Python standard library.
+
+### Claude Code in VS Code
+
+1. Open the Claude Code panel and type `/plugins`.
+2. On the **Marketplaces** tab, add `mishrabp/ai-agent-kits`.
+3. On the **Plugins** tab, find **gh-pr-kit** and click **Install**, then pick a scope (just you, or this project). Fill in the optional GitHub token when the form asks; leave it empty to use your `gh auth login` session.
+
+Or paste this link into your browser to jump straight to the install dialog:
+
+```text
+vscode://anthropic.claude-code/install-plugin?plugin=gh-pr-kit&marketplace=mishrabp/ai-agent-kits
+```
+
+Then type `/gh-pr-kit:pr-review cli/cli#14763` in the panel, or just ask, for example "review PR 42". The VS Code extension, the CLI
+and the Desktop app share their plugins, so installing in one makes it available in the others.
+
+### Claude Code CLI
 
 ```bash
 claude plugin marketplace add mishrabp/ai-agent-kits
 claude plugin install gh-pr-kit@ai-agent-kits
+claude plugin update gh-pr-kit@ai-agent-kits      # later, to get new versions
 ```
 
-This works the same from the CLI, VS Code's terminal and the Desktop app, which share `~/.claude`.
+### Claude Desktop
 
-To turn it on for everyone in a project, commit this to the project's `.claude/settings.json`. Teammates get the
-plugin after they trust the folder:
+In the **Code** tab, start a **Local** session, click **+** next to the prompt box and choose **Add plugins** (or
+**Plugins → Browse plugins**), then install **gh-pr-kit**. If the `ai-agent-kits` marketplace isn't listed yet, run
+the two CLI commands above once; the Desktop app reads the same settings as the CLI.
+
+**Cloud** sessions in the Desktop app work like claude.ai/code; see the next section.
+
+### Claude cloud sessions (claude.ai/code, Desktop **Cloud**, mobile)
+
+Cloud sessions run on a fresh VM, and they don't install plugins from marketplaces or from a repository's
+`.claude/settings.json`. Load the kit from a clone instead, in your cloud **environment's** settings:
+
+1. **Setup script**: `git clone --depth 1 https://github.com/mishrabp/ai-agent-kits /opt/ai-agent-kits`
+2. **Environment variable**: `CLAUDE_CODE_PLUGIN_DIRS=/opt/ai-agent-kits/claude/gh-pr-kit`
+   (to load several kits, separate the paths with `:`)
+
+Every cloud session that uses that environment then has the kit, with the same commands as locally.
+
+For private repositories or more than 60 requests an hour, also add an environment variable `GH_TOKEN` with a
+fine-grained, read-only GitHub token. Use `GH_TOKEN`, not `GITHUB_TOKEN`: the plugin's `.mcp.json` sets
+`GITHUB_TOKEN` from its own `github_token` setting, which can't be filled in on a cloud VM. Everyone who uses the
+environment can read its variables, so don't use a token with write access there.
+
+> This recipe follows the Claude Code docs (setup scripts and `CLAUDE_CODE_PLUGIN_DIRS`), and the variable was tested
+> locally, but it hasn't been run in a cloud session yet. If a setup result is cached and you need a newer version of
+> the kit, run `git -C /opt/ai-agent-kits pull` in the session.
+
+### Turn it on for everyone in a project
+
+Commit this to the project's `.claude/settings.json`. Teammates get the plugin after they trust the folder:
 
 ```json
 {
@@ -63,16 +104,95 @@ plugin after they trust the folder:
 }
 ```
 
-### Only the connector, with any MCP client
+### In your own agentic AI application
 
-The server is a plain Python script, so you can use it without the plugin:
+Clone the repository first: `git clone https://github.com/mishrabp/ai-agent-kits`.
 
-```bash
-git clone https://github.com/mishrabp/ai-agent-kits ~/ai-agent-kits
-claude mcp add github-prs -- python3 ~/ai-agent-kits/claude/gh-pr-kit/server/github_mcp.py
+**The whole kit, with the Claude Agent SDK.** The SDK loads a plugin folder directly: its skills, agents, hooks and
+MCP server all work, under the same names as in Claude Code (`pip install claude-agent-sdk`):
+
+```python
+import asyncio
+from pathlib import Path
+from claude_agent_sdk import query, ClaudeAgentOptions, ResultMessage
+
+KIT = Path("/path/to/ai-agent-kits/claude/gh-pr-kit")
+
+async def main():
+    options = ClaudeAgentOptions(
+        plugins=[{"type": "local", "path": str(KIT)}],
+        setting_sources=[],  # load only this kit, not the plugins and settings on this machine
+        allowed_tools=["mcp__plugin_gh-pr-kit_github__get_pull_request",
+                      "mcp__plugin_gh-pr-kit_github__get_pull_request_diff",
+                      "mcp__plugin_gh-pr-kit_github__list_pull_requests",
+                      "Agent"],
+    )
+    async for message in query(prompt="/gh-pr-kit:pr-review cli/cli#14763", options=options):
+        if isinstance(message, ResultMessage):
+            print(message.result)
+
+asyncio.run(main())
 ```
 
-### Commands, once installed
+**Only the MCP server, with any MCP client.** `server/github_mcp.py` is a standard stdio MCP server, so any app or agent
+that speaks MCP can start it. Most clients take the same `command`/`args` shape: Claude Desktop's
+`claude_desktop_config.json`, Gemini CLI's `settings.json` and Cursor's `mcp.json` use `mcpServers`, as below;
+VS Code's `.vscode/mcp.json` (GitHub Copilot) uses a `servers` key with `"type": "stdio"` instead.
+
+```json
+{
+  "mcpServers": {
+    "github": {
+      "command": "python3",
+      "args": ["/path/to/ai-agent-kits/claude/gh-pr-kit/server/github_mcp.py"],
+      "env": { "GH_TOKEN": "ghp_..." }
+    }
+  }
+}
+```
+
+With the Agent SDK, pass the same server in code (`KIT` as in the example above):
+
+```python
+options = ClaudeAgentOptions(
+    setting_sources=[],
+    mcp_servers={
+        "github": {
+            "command": "python3",
+            "args": [str(KIT / "server/github_mcp.py")],
+            "env": {"GH_TOKEN": "ghp_..."},  # a GitHub token (optional for public repos)
+        }
+    },
+    allowed_tools=["mcp__github__get_pull_request"],
+)
+# then: query(prompt="Summarize pull request cli/cli#14763.", options=options)
+```
+
+From plain Python with the official MCP client (`pip install mcp`), for frameworks that aren't MCP hosts:
+
+```python
+import asyncio
+from mcp import ClientSession, StdioServerParameters
+from mcp.client.stdio import stdio_client
+
+async def main():
+    params = StdioServerParameters(command="python3", args=["/path/to/ai-agent-kits/claude/gh-pr-kit/server/github_mcp.py"])
+    async with stdio_client(params) as (read, write):
+        async with ClientSession(read, write) as session:
+            await session.initialize()
+            tools = await session.list_tools()  # hand these to your LLM as tool definitions
+            print([t.name for t in tools.tools])
+            # when the LLM picks a tool: await session.call_tool(name, arguments)
+
+asyncio.run(main())
+```
+
+**Only the skills.** The skills in `skills/` are plain `SKILL.md` files (the Agent Skills format), but they are written for this
+plugin: their `allowed-tools` and the `pr-reviewer` agent's `tools` use the plugin's tool names
+(`mcp__plugin_gh-pr-kit_github__…`). If you copy them into another agent with the MCP server registered under a
+different name, update those names to match (for a server named `github`: `mcp__github__get_pull_request`, and so on).
+
+## Commands
 
 ```text
 /gh-pr-kit:pr-review 123                       # PR in the current repo (taken from the git remote)
@@ -89,6 +209,7 @@ You can also just ask, for example "review PR 42" or "draft release notes for 2.
 ```bash
 python3 scripts/smoke_test.py     # runs the MCP server against real GitHub (read-only tools)
                                   # optional: python3 scripts/smoke_test.py owner/repo 123
+                                  # or with uv: uv run scripts/smoke_test.py
 claude plugin validate .
 claude --plugin-dir .             # try the plugin in a real session without installing it
                                   # (run /reload-plugins after edits)

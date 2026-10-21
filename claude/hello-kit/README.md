@@ -67,12 +67,14 @@ You: /hello-kit:hello Ada
 ## Try it
 
 ```bash
+cd claude/hello-kit   # from the repository root
+
 # 1. Talk to the connector yourself, the way Claude Code does:
 echo '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"get_fortune","arguments":{"name":"Ada"}}}' \
   | python3 server/fortune_server.py
 
 # 2. Load the whole plugin for one session (CLI or the VS Code terminal):
-claude --plugin-dir ./hello-kit
+claude --plugin-dir .
 #    then type:  /hello-kit:hello Ada
 #    or just:    say hello to Ada        (Claude picks the skill from its description)
 ```
@@ -91,18 +93,60 @@ version it or share it as one unit:
 | Agent | `.claude/agents/poet.md` | "ask the poet agent..." or `@agent-poet` |
 | Connector | `claude mcp add fortune -- python3 /path/to/fortune_server.py` | Claude calls `get_fortune` when it's useful |
 
-## Share it through GitHub
+## Install and use it
 
-The repo's root `.claude-plugin/marketplace.json` lists this folder (`./claude/hello-kit`), so the GitHub repo
-itself is the marketplace. Anyone can install it with:
+You need **`python3` 3.9 or newer** on your `PATH`. There is nothing else to install: the code uses only the
+Python standard library.
+
+### Claude Code in VS Code
+
+1. Open the Claude Code panel and type `/plugins`.
+2. On the **Marketplaces** tab, add `mishrabp/ai-agent-kits`.
+3. On the **Plugins** tab, find **hello-kit** and click **Install**, then pick a scope (just you, or this project).
+
+Or paste this link into your browser to jump straight to the install dialog:
+
+```text
+vscode://anthropic.claude-code/install-plugin?plugin=hello-kit&marketplace=mishrabp/ai-agent-kits
+```
+
+Then type `/hello-kit:hello Ada` in the panel, or just ask, for example "say hello to Ada". The VS Code extension, the CLI
+and the Desktop app share their plugins, so installing in one makes it available in the others.
+
+### Claude Code CLI
 
 ```bash
 claude plugin marketplace add mishrabp/ai-agent-kits
 claude plugin install hello-kit@ai-agent-kits
+claude plugin update hello-kit@ai-agent-kits      # later, to get new versions
 ```
 
-You need `python3` (3.9+) on your `PATH` for the connector. To turn it on for everyone in a project, commit this
-to the project's `.claude/settings.json`:
+### Claude Desktop
+
+In the **Code** tab, start a **Local** session, click **+** next to the prompt box and choose **Add plugins** (or
+**Plugins → Browse plugins**), then install **hello-kit**. If the `ai-agent-kits` marketplace isn't listed yet, run
+the two CLI commands above once; the Desktop app reads the same settings as the CLI.
+
+**Cloud** sessions in the Desktop app work like claude.ai/code; see the next section.
+
+### Claude cloud sessions (claude.ai/code, Desktop **Cloud**, mobile)
+
+Cloud sessions run on a fresh VM, and they don't install plugins from marketplaces or from a repository's
+`.claude/settings.json`. Load the kit from a clone instead, in your cloud **environment's** settings:
+
+1. **Setup script**: `git clone --depth 1 https://github.com/mishrabp/ai-agent-kits /opt/ai-agent-kits`
+2. **Environment variable**: `CLAUDE_CODE_PLUGIN_DIRS=/opt/ai-agent-kits/claude/hello-kit`
+   (to load several kits, separate the paths with `:`)
+
+Every cloud session that uses that environment then has the kit, with the same commands as locally.
+
+> This recipe follows the Claude Code docs (setup scripts and `CLAUDE_CODE_PLUGIN_DIRS`), and the variable was tested
+> locally, but it hasn't been run in a cloud session yet. If a setup result is cached and you need a newer version of
+> the kit, run `git -C /opt/ai-agent-kits pull` in the session.
+
+### Turn it on for everyone in a project
+
+Commit this to the project's `.claude/settings.json`. Teammates get the plugin after they trust the folder:
 
 ```json
 {
@@ -112,6 +156,90 @@ to the project's `.claude/settings.json`:
   "enabledPlugins": { "hello-kit@ai-agent-kits": true }
 }
 ```
+
+### In your own agentic AI application
+
+Clone the repository first: `git clone https://github.com/mishrabp/ai-agent-kits`.
+
+**The whole kit, with the Claude Agent SDK.** The SDK loads a plugin folder directly: its skills, agents, hooks and
+MCP server all work, under the same names as in Claude Code (`pip install claude-agent-sdk`):
+
+```python
+import asyncio
+from pathlib import Path
+from claude_agent_sdk import query, ClaudeAgentOptions, ResultMessage
+
+KIT = Path("/path/to/ai-agent-kits/claude/hello-kit")
+
+async def main():
+    options = ClaudeAgentOptions(
+        plugins=[{"type": "local", "path": str(KIT)}],
+        setting_sources=[],  # load only this kit, not the plugins and settings on this machine
+        allowed_tools=["mcp__plugin_hello-kit_fortune__*", "Agent"],
+    )
+    async for message in query(prompt="/hello-kit:hello Ada", options=options):
+        if isinstance(message, ResultMessage):
+            print(message.result)
+
+asyncio.run(main())
+```
+
+**Only the MCP server, with any MCP client.** `server/fortune_server.py` is a standard stdio MCP server, so any app or agent
+that speaks MCP can start it. Most clients take the same `command`/`args` shape: Claude Desktop's
+`claude_desktop_config.json`, Gemini CLI's `settings.json` and Cursor's `mcp.json` use `mcpServers`, as below;
+VS Code's `.vscode/mcp.json` (GitHub Copilot) uses a `servers` key with `"type": "stdio"` instead.
+
+```json
+{
+  "mcpServers": {
+    "fortune": {
+      "command": "python3",
+      "args": ["/path/to/ai-agent-kits/claude/hello-kit/server/fortune_server.py"]
+    }
+  }
+}
+```
+
+With the Agent SDK, pass the same server in code (`KIT` as in the example above):
+
+```python
+options = ClaudeAgentOptions(
+    setting_sources=[],
+    mcp_servers={
+        "fortune": {
+            "command": "python3",
+            "args": [str(KIT / "server/fortune_server.py")]
+        }
+    },
+    allowed_tools=["mcp__fortune__get_fortune"],
+)
+# then: query(prompt="Draw a fortune for Ada with the get_fortune tool.", options=options)
+```
+
+From plain Python with the official MCP client (`pip install mcp`), for frameworks that aren't MCP hosts:
+
+```python
+import asyncio
+from mcp import ClientSession, StdioServerParameters
+from mcp.client.stdio import stdio_client
+
+async def main():
+    params = StdioServerParameters(command="python3", args=["/path/to/ai-agent-kits/claude/hello-kit/server/fortune_server.py"])
+    async with stdio_client(params) as (read, write):
+        async with ClientSession(read, write) as session:
+            await session.initialize()
+            tools = await session.list_tools()  # hand these to your LLM as tool definitions
+            print([t.name for t in tools.tools])
+            # when the LLM picks a tool: await session.call_tool(name, arguments)
+
+asyncio.run(main())
+```
+
+**Only the skills.** The skill in `skills/hello/` is a plain `SKILL.md` (the Agent Skills format), so you can copy it into any
+agent that reads skills: `.claude/skills/hello/` in a project for the Agent SDK or Claude Code, or upload it as a
+custom skill on claude.ai. It expects two things to exist where it runs: the `get_fortune` tool (the MCP server
+above) and the `poet` subagent (`agents/poet.md`, which goes in `.claude/agents/`). Without them Claude improvises
+the fortune and the poem.
 
 ## Then look at the bigger kits
 

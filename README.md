@@ -53,8 +53,13 @@ trust the folder:
 ### Claude Code cloud sessions (claude.ai/code)
 
 Cloud sessions don't install plugins from marketplaces, including the ones a repo's `.claude/settings.json`
-declares. They only see what's committed in the repository they clone. To use a kit there, copy its folder into
-that repository at `.claude/skills/<kit>/` (for example `.claude/skills/hello-kit/`) and commit it.
+declares. Load the kits from a clone instead, in your cloud environment's settings:
+
+1. **Setup script**: `git clone --depth 1 https://github.com/mishrabp/ai-agent-kits /opt/ai-agent-kits`
+2. **Environment variable**: `CLAUDE_CODE_PLUGIN_DIRS=/opt/ai-agent-kits/claude/hello-kit:/opt/ai-agent-kits/claude/gh-pr-kit`
+
+Each kit's README has the details, plus how to use the kit from VS Code, the Desktop app, and your own agentic
+AI application (Claude Agent SDK, or any MCP client).
 
 ## Repository layout
 
